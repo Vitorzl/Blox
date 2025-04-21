@@ -1,0 +1,119 @@
+-- Vitinho HUB - Todos os Seas
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = library.CreateLib("Vitinho HUB - Todos os Seas", "Midnight")
+
+-- Auto Farm
+local FarmTab = Window:NewTab("Auto Farm")
+local FarmSection = FarmTab:NewSection("Level / Quest / Haki")
+
+_G.AutoFarm = false
+_G.AutoQuest = false
+_G.AutoHaki = false
+
+FarmSection:NewToggle("Auto Farm", "Farm automático", function(state)
+    _G.AutoFarm = state
+    if state then AutoFarm() end
+end)
+
+FarmSection:NewToggle("Auto Quest", "Aceita e completa missões", function(state)
+    _G.AutoQuest = state
+end)
+
+FarmSection:NewToggle("Auto Haki", "Ativa o Buso (Haki)", function(state)
+    _G.AutoHaki = state
+end)
+
+function AutoFarm()
+    while _G.AutoFarm do wait()
+        pcall(function()
+            if _G.AutoHaki then
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
+            end
+
+            if _G.AutoQuest then
+                local args = {
+                    [1] = "StartQuest",
+                    [2] = "PiratePortQuest",
+                    [3] = 1
+                }
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
+            end
+
+            for _, enemy in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+                    local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
+                    hrp.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 2)
+                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "Z", false, game)
+                    break
+                end
+            end
+        end)
+    end
+end
+
+-- Auto Stats
+local StatsTab = Window:NewTab("Auto Stats")
+local StatsSection = StatsTab:NewSection("Distribuidor de Pontos")
+
+_G.AutoStats = false
+StatsSection:NewToggle("Auto Melee", "Distribui em Melee", function(state)
+    _G.AutoStats = state
+    if state then AutoStatPoints() end
+end)
+
+function AutoStatPoints()
+    while _G.AutoStats do wait(1)
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Melee", 3)
+    end
+end
+
+-- Teleporte para todos os Seas
+local TeleportTab = Window:NewTab("Teleportes")
+local TeleportSection = TeleportTab:NewSection("Ilhas e Bosses de todos os Seas")
+
+-- Sea 1
+TeleportSection:NewButton("Pirate Port (Sea 1)", "Vai pro Pirate Port", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-292, 67, 5548)
+end)
+TeleportSection:NewButton("Sandora (Sea 1)", "Vai pra Sandora", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(2539, 26, -1871)
+end)
+
+-- Sea 2
+TeleportSection:NewButton("Skylands (Sea 2)", "Vai pra Skylands", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(5335, 210, 4139)
+end)
+TeleportSection:NewButton("Cursed Ship (Sea 2)", "Vai pro Cursed Ship", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(8800, 90, 5150)
+end)
+
+-- Sea 3
+TeleportSection:NewButton("Pirate Port (Sea 3)", "Vai pro Pirate Port", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-292, 67, 5548)
+end)
+TeleportSection:NewButton("Great Tree (Sea 3)", "Vai pra Great Tree", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(2346, 25, -6567)
+end)
+
+-- Bosses de todos os Seas
+local BossTab = Window:NewTab("Bosses")
+local BossSection = BossTab:NewSection("Teleportar para Bosses")
+
+-- Bosses Sea 1
+BossSection:NewButton("Buggy the Clown (Sea 1)", "Boss Buggy", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(287, 25, -1287)
+end)
+
+-- Bosses Sea 2
+BossSection:NewButton("Giant Skeleton (Sea 2)", "Boss Skeleton", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(8285, 50, 6310)
+end)
+
+-- Bosses Sea 3
+BossSection:NewButton("Dough King (Sea 3)", "Boss Dough", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2037, 38, -12256)
+end)
+
+-- Créditos
+local CreditTab = Window:NewTab("Créditos")
+local CreditSection = CreditTab:NewSection("Feito por Vitinho & ChatGPT")
