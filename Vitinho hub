@@ -1,119 +1,51 @@
--- Vitinho HUB - Todos os Seas
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = library.CreateLib("Vitinho HUB - Todos os Seas", "Midnight")
+-- Vitinho HUB - Com Painel Anti-Cheat e Detector de Moderador Toggle
 
--- Auto Farm
-local FarmTab = Window:NewTab("Auto Farm")
-local FarmSection = FarmTab:NewSection("Level / Quest / Haki")
+local VitinhoHub = {} local player = game.Players.LocalPlayer local players = game:GetService("Players") local replicatedStorage = game:GetService("ReplicatedStorage") local commF = replicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_") local runService = game:GetService("RunService") local TweenService = game:GetService("TweenService") local httpService = game:GetService("HttpService")
 
-_G.AutoFarm = false
-_G.AutoQuest = false
-_G.AutoHaki = false
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))() local Window = Library.CreateLib("Vitinho HUB", "Sentinel")
 
-FarmSection:NewToggle("Auto Farm", "Farm automático", function(state)
-    _G.AutoFarm = state
-    if state then AutoFarm() end
-end)
+-- Anti-Cheat Bypass Básico pcall(function() if getconnections then for _, v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do v:Disable() end end end)
 
-FarmSection:NewToggle("Auto Quest", "Aceita e completa missões", function(state)
-    _G.AutoQuest = state
-end)
+-- Bloqueio de Kick Manual local mt = getrawmetatable(game) setreadonly(mt, false) local oldNamecall = mt.__namecall mt.__namecall = newcclosure(function(self, ...) local args = {...} local method = getnamecallmethod() if tostring(self) == "Kick" and method == "FireServer" then return warn("Tentativa de kick bloqueada!") end return oldNamecall(self, ...) end)
 
-FarmSection:NewToggle("Auto Haki", "Ativa o Buso (Haki)", function(state)
-    _G.AutoHaki = state
-end)
+-- Painel de Segurança local SecurityTab = Window:NewTab("Segurança") local SecuritySection = SecurityTab:NewSection("Proteções")
 
-function AutoFarm()
-    while _G.AutoFarm do wait()
-        pcall(function()
-            if _G.AutoHaki then
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
-            end
+-- Detector de Moderadores/Admins conhecidos local knownMods = { 1, 2825391, 64481938, }
 
-            if _G.AutoQuest then
-                local args = {
-                    [1] = "StartQuest",
-                    [2] = "PiratePortQuest",
-                    [3] = 1
-                }
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-            end
+VitinhoHub.AntiMod = true
 
-            for _, enemy in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-                if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
-                    local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
-                    hrp.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 2)
-                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "Z", false, game)
-                    break
-                end
-            end
-        end)
-    end
-end
+function VitinhoHub:VerificarModeradores() if not VitinhoHub.AntiMod then return end for _, plr in pairs(players:GetPlayers()) do if table.find(knownMods, plr.UserId) then warn("Moderador detectado: " .. plr.Name) game.StarterGui:SetCore("SendNotification", { Title = "Alerta!", Text = "Moderador detectado! Saindo...", Duration = 10 }) task.wait(2) player:Kick("Moderador detectado!") end end end
 
--- Auto Stats
-local StatsTab = Window:NewTab("Auto Stats")
-local StatsSection = StatsTab:NewSection("Distribuidor de Pontos")
+players.PlayerAdded:Connect(function(plr) if table.find(knownMods, plr.UserId) then VitinhoHub:VerificarModeradores() end end)
 
-_G.AutoStats = false
-StatsSection:NewToggle("Auto Melee", "Distribui em Melee", function(state)
-    _G.AutoStats = state
-    if state then AutoStatPoints() end
-end)
+task.delay(3, function() VitinhoHub:VerificarModeradores() end)
 
-function AutoStatPoints()
-    while _G.AutoStats do wait(1)
-        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AddPoint", "Melee", 3)
-    end
-end
+-- Toggle da proteção Anti-Mod SecuritySection:NewToggle("Detector de Moderador", "Proteção contra entrada de staff", function(state) VitinhoHub.AntiMod = state if state then print("Detector de Moderador ativado") VitinhoHub:VerificarModeradores() else print("Detector de Moderador desativado") end end)
 
--- Teleporte para todos os Seas
-local TeleportTab = Window:NewTab("Teleportes")
-local TeleportSection = TeleportTab:NewSection("Ilhas e Bosses de todos os Seas")
+-- GUI Principal local Main = Window:NewTab("Main") local FarmSection = Main:NewSection("Auto Farm") local StatsSection = Main:NewSection("Auto Stats")
 
--- Sea 1
-TeleportSection:NewButton("Pirate Port (Sea 1)", "Vai pro Pirate Port", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-292, 67, 5548)
-end)
-TeleportSection:NewButton("Sandora (Sea 1)", "Vai pra Sandora", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(2539, 26, -1871)
-end)
+local TeleportTab = Window:NewTab("Teleport") local TeleportSection = TeleportTab:NewSection("Ilhas")
 
--- Sea 2
-TeleportSection:NewButton("Skylands (Sea 2)", "Vai pra Skylands", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(5335, 210, 4139)
-end)
-TeleportSection:NewButton("Cursed Ship (Sea 2)", "Vai pro Cursed Ship", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(8800, 90, 5150)
-end)
+local BossTab = Window:NewTab("Bosses") local BossSection = BossTab:NewSection("Teleportar para Boss")
 
--- Sea 3
-TeleportSection:NewButton("Pirate Port (Sea 3)", "Vai pro Pirate Port", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-292, 67, 5548)
-end)
-TeleportSection:NewButton("Great Tree (Sea 3)", "Vai pra Great Tree", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(2346, 25, -6567)
-end)
+VitinhoHub.AutoFarm = false VitinhoHub.AutoQuest = false VitinhoHub.AutoHaki = false VitinhoHub.AutoStats = false
 
--- Bosses de todos os Seas
-local BossTab = Window:NewTab("Bosses")
-local BossSection = BossTab:NewSection("Teleportar para Bosses")
+function VitinhoHub:AtivarHaki() local success, err = pcall(function() commF:InvokeServer("Buso") end) if not success then warn("Erro ao ativar o Haki:", err) end end
 
--- Bosses Sea 1
-BossSection:NewButton("Buggy the Clown (Sea 1)", "Boss Buggy", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(287, 25, -1287)
-end)
+function VitinhoHub:AutoFarm() while VitinhoHub.AutoFarm do task.wait() if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then self:AtivarHaki() end end end
 
--- Bosses Sea 2
-BossSection:NewButton("Giant Skeleton (Sea 2)", "Boss Skeleton", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(8285, 50, 6310)
-end)
+function VitinhoHub:AutoDistribuirStats() while VitinhoHub.AutoStats do task.wait(1) local success, err = pcall(function() commF:InvokeServer("AddPoint", "Melee", 1) end) if not success then warn("Erro ao distribuir pontos:", err) end end end
 
--- Bosses Sea 3
-BossSection:NewButton("Dough King (Sea 3)", "Boss Dough", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2037, 38, -12256)
-end)
+FarmSection:NewToggle("Auto Farm", "Farm automático de inimigos", function(state) VitinhoHub.AutoFarm = state if state then print("Auto Farm ativado") VitinhoHub:AutoFarm() else print("Auto Farm desativado") end end)
 
--- Créditos
-local CreditTab = Window:NewTab("Créditos")
-local CreditSection = CreditTab:NewSection("Feito por Vitinho & ChatGPT")
+StatsSection:NewToggle("Auto Stats", "Distribuir pontos automaticamente em Melee", function(state) VitinhoHub.AutoStats = state if state then print("Auto Stats ativado") VitinhoHub:AutoDistribuirStats() else print("Auto Stats desativado") end end)
+
+local teleportList = { ["Sea 1"] = { ["Marine Starter"] = CFrame.new(-260, 10, 2060), ["Pirate Starter"] = CFrame.new(1034, 10, 1325), ["Jungle"] = CFrame.new(-1225, 10, 389) }, ["Sea 2"] = { ["Kingdom of Rose"] = CFrame.new(-400, 100, 300), ["Green Zone"] = CFrame.new(-2290, 72, -730) }, ["Sea 3"] = { ["Port Town"] = CFrame.new(-285, 43, 5475), ["Hydra Island"] = CFrame.new(5227, 603, -1385) } }
+
+for sea, islands in pairs(teleportList) do TeleportSection:NewLabel(sea) for name, pos in pairs(islands) do TeleportSection:NewButton(name, "Teleporta para " .. name, function() if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then player.Character.HumanoidRootPart.CFrame = pos end end) end end
+
+local bosses = { ["Sea 1"] = { ["Gorila Rei"] = CFrame.new(-1120, 10, 425), ["Yeti"] = CFrame.new(1100, 10, -1450) }, ["Sea 2"] = { ["Don Swan"] = CFrame.new(2285, 15, 875), ["Fajita"] = CFrame.new(-5200, 330, -2500) }, ["Sea 3"] = { ["Katsu"] = CFrame.new(5620, 200, -2300), ["Captain Elephant"] = CFrame.new(-13250, 350, -7800) } }
+
+for sea, group in pairs(bosses) do BossSection:NewLabel(sea) for name, pos in pairs(group) do BossSection:NewButton(name, "Teleporta para o boss " .. name, function() if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then player.Character.HumanoidRootPart.CFrame = pos end end) end end
+
+return VitinhoHub
